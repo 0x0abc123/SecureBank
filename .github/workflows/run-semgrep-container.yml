@@ -1,0 +1,22 @@
+name: Semgrep Docker Container in Actions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run_semgrep:
+    runs-on: ubuntu-latest
+    container: 
+      image: zerosource/dojo-s3import-semgrep
+      env:
+        LAMBDA_URL: ${{ secrets.LAMBDA_URL }}
+        APP_ID: ${{ secrets.APP_ID }}
+        
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run Commands inside Docker Container
+      run: |
+        ls -alh $GITHUB_WORKSPACE
+        semgrep --config=p/ci --sarif -o $RUNNER_TEMP/output.sarif $GITHUB_WORKSPACE
+        upload-results-s3.sh $RUNNER_TEMP/output.sarif
